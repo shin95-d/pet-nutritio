@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#fff8f5">
+<title>ペット栄養管理</title>
+<style>
+:root {
+  --bg: #fff8f5;
+  --bg2: #fff2ec;
+  --bg3: #ffe8de;
+  --card: #ffffff;
+  --text: #2d1f1a;
+  --text2: #8a6a62;
+  --text3: #b89a92;
+  --border: rgba(180,120,100,0.15);
+  --border2: rgba(180,120,100,0.28);
+  --accent: #e8724a;
+  --accent2: #f5a07a;
+  --accent-bg: #fff0eb;
+  --accent-text: #c45530;
+  --green: #3a9e7a;
+  --green-bg: #eaf7f2;
+  --green-text: #1e6e52;
+  --amber: #d4900a;
+  --amber-bg: #fef6e0;
+  --amber-text: #8a5e00;
+  --red: #d94040;
+  --red-bg: #fdeaea;
+  --red-text: #922020;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1e1510;
+    --bg2: #261a14;
+    --bg3: #2e201a;
+    --card: #2a1e18;
+    --text: #f5e8e2;
+    --text2: #b08a80;
+    --text3: #7a5a52;
+    --border: rgba(200,140,120,0.12);
+    --border2: rgba(200,140,120,0.22);
+    --accent-bg: #3a1e14;
+    --accent-text: #f5a07a;
+    --green-bg: #0e2e22;
+    --green-text: #5DCAA5;
+    --amber-bg: #2a1e04;
+    --amber-text: #FAC775;
+    --red-bg: #2a0e0e;
+    --red-text: #F09595;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px;}
+.top-bar{background:var(--card);border-bottom:0.5px solid var(--border);padding:14px 16px 12px;position:sticky;top:0;z-index:10;}
+.top-bar-inner{display:flex;align-items:center;gap:10px;}
+.top-bar h1{font-size:17px;font-weight:700;color:var(--accent);}
+.top-bar p{font-size:11px;color:var(--text2);margin-top:1px;}
+.tabs{display:flex;background:var(--card);border-bottom:0.5px solid var(--border);position:sticky;top:57px;z-index:9;}
+.tab{flex:1;padding:10px 4px;font-size:13px;font-weight:600;color:var(--text2);text-align:center;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.page{display:none;}.page.active{display:block;}
+.container{max-width:480px;margin:0 auto;padding:12px 12px 0;}
+.card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 15px;margin-bottom:10px;}
+.card-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.card-icon{font-size:18px;line-height:1;}
+.sec-title{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:0.05em;text-transform:uppercase;}
+.field{margin-bottom:10px;}
+.field:last-child{margin-bottom:0;}
+.field label{font-size:12px;color:var(--text2);font-weight:600;display:block;margin-bottom:5px;}
+.field select,.field input[type="number"]{width:100%;font-size:15px;padding:10px 12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg2);color:var(--text);appearance:none;-webkit-appearance:none;}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23b08a80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.add-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.btn{width:100%;padding:11px;font-size:14px;font-weight:600;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg2);color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.btn.primary{background:var(--accent);color:#fff;border-color:transparent;}
+.btn.calc{background:var(--accent);color:#fff;border:none;font-size:15px;font-weight:700;padding:14px;border-radius:var(--radius);margin-bottom:10px;}
+.btn.save-rec{background:var(--green-bg);color:var(--green-text);border-color:transparent;font-weight:700;}
+.btn.danger{background:var(--red-bg);color:var(--red-text);border-color:transparent;}
+.food-item,.exercise-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:0.5px solid var(--border);}
+.food-info,.ex-info{flex:1;min-width:0;}
+.food-name,.ex-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.food-sub,.ex-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+.ex-cal{font-size:14px;font-weight:700;color:var(--green);white-space:nowrap;}
+.rm-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;padding:4px 8px;border-radius:6px;line-height:1;flex-shrink:0;}
+.tag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--accent-bg);color:var(--accent-text);white-space:nowrap;font-weight:700;}
+.empty{color:var(--text3);font-size:13px;padding:14px 0;text-align:center;}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.metric{background:var(--bg2);border-radius:var(--radius-sm);padding:10px 12px;border:0.5px solid var(--border);}
+.metric .lbl{font-size:11px;color:var(--text2);font-weight:600;margin-bottom:3px;}
+.metric .val{font-size:22px;font-weight:700;color:var(--accent);}
+.metric .unt{font-size:11px;color:var(--text2);}
+.metric.green .val{color:var(--green);}
+.divider{border:none;border-top:0.5px solid var(--border);margin:12px 0;}
+.nrow{margin-bottom:12px;}
+.nhdr{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;}
+.nname{font-weight:700;color:var(--text);}
+.nval{color:var(--text2);}
+.bar-bg{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;transition:width 0.5s ease;}
+.bar-ok{background:var(--green);}
+.bar-low{background:var(--amber);}
+.bar-high{background:var(--red);}
+.slbl{font-size:11px;margin-top:4px;font-weight:600;}
+.slbl.ok{color:var(--green-text);}
+.slbl.low{color:var(--amber-text);}
+.slbl.high{color:var(--red-text);}
+.advice{border-radius:var(--radius-sm);padding:12px 13px;font-size:13px;line-height:1.7;margin-top:8px;border:0.5px solid var(--border);}
+.advice.good{background:var(--green-bg);color:var(--green-text);}
+.advice.warn{background:var(--amber-bg);color:var(--amber-text);}
+.advice b{font-weight:700;}
+.balance-box{border-radius:var(--radius-sm);padding:14px;text-align:center;margin-top:8px;border:0.5px solid var(--border);}
+.balance-box.ok{background:var(--green-bg);}
+.balance-box.over{background:var(--amber-bg);}
+.balance-box.under{background:var(--red-bg);}
+.balance-label{font-size:12px;font-weight:700;margin-bottom:4px;}
+.balance-label.ok{color:var(--green-text);}
+.balance-label.over{color:var(--amber-text);}
+.balance-label.under{color:var(--red-text);}
+.balance-val{font-size:26px;font-weight:700;}
+.balance-val.ok{color:var(--green);}
+.balance-val.over{color:var(--amber);}
+.balance-val.under{color:var(--red);}
+.balance-note{font-size:11px;color:var(--text2);margin-top:4px;}
+.rec-item{background:var(--bg2);border-radius:var(--radius-sm);padding:12px 13px;margin-bottom:8px;border:0.5px solid var(--border);}
+.rec-date{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px;}
+.rec-foods{font-size:13px;color:var(--text2);margin-bottom:4px;line-height:1.6;}
+.rec-stats{display:flex;gap:12px;font-size:12px;flex-wrap:wrap;margin-top:6px;}
+.rec-stat{font-weight:700;color:var(--text);}
+.rec-stat span{color:var(--text2);font-weight:400;}
+.rec-actions{margin-top:8px;}
+.rec-btn{padding:7px 14px;font-size:12px;font-weight:600;border-radius:var(--radius-xs);border:0.5px solid var(--border2);background:var(--card);color:var(--text);cursor:pointer;}
+.rec-btn.del{background:var(--red-bg);color:var(--red-text);border-color:transparent;}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <div style="font-size:26px;line-height:1;">🐾</div>
+    <div>
+      <h1>ペット栄養管理</h1>
+      <p>毎日の食事と運動を記録しよう</p>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPage('food',this)">🍖 食事</button>
+  <button class="tab" onclick="showPage('exercise',this)">🏃 運動</button>
+  <button class="tab" onclick="showPage('records',this)">📋 記録</button>
+</div>
+
+<!-- 食事ページ -->
+<div id="page-food" class="page active">
+<div class="container">
+  <div class="card">
+    <div class="card-header"><span class="card-icon">🐶</span><span class="sec-title">ペット情報</span></div>
+    <div class="row2">
+      <div class="field"><label>種別</label>
+        <select id="pet-type">
+          <option value="dog">犬</option>
+          <option value="cat">猫</option>
+        </select>
+      </div>
+      <div class="field"><label>体重 (kg)</label>
+        <input type="number" id="weight" value="5" min="0.5" max="80" step="0.1">
+      </div>
+    </div>
+    <div class="field"><label>活動レベル</label>
+      <select id="activity">
+        <option value="0.8">低（室内・老犬）</option>
+        <option value="1.0" selected>普通</option>
+        <option value="1.3">高（活発）</option>
+        <option value="1.6">非常に高い</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-icon">🥩</span><span class="sec-title">食材を追加</span></div>
+    <div class="field"><label>食材を選択</label>
+      <select id="food-select">
+        <option value="">-- 選択してください --</option>
+        <optgroup label="🦌 ジビエ">
+          <option value="venison">鹿肉（赤身）</option>
+          <option value="boar">猪肉</option>
+          <option value="rabbit">ウサギ肉</option>
+          <option value="horse">馬肉</option>
+          <option value="duck">鴨肉</option>
+        </optgroup>
+        <optgroup label="🍗 肉類">
+          <option value="chicken">鶏肉（むね）</option>
+          <option value="chicken_thigh">鶏肉（もも）</option>
+          <option value="beef">牛肉（赤身）</option>
+          <option value="pork">豚肉（赤身）</option>
+          <option value="turkey">七面鳥</option>
+          <option value="salmon">サーモン</option>
+          <option value="tuna">マグロ</option>
+          <option value="sardine">イワシ</option>
+        </optgroup>
+        <optgroup label="❤️ 内臓">
+          <option value="liver_chicken">鶏レバー</option>
+          <option value="liver_beef">牛レバー</option>
+          <option value="heart">ハツ（心臓）</option>
+          <option value="kidney">腎臓</option>
+        </optgroup>
+        <optgroup label="🥚 卵・乳製品">
+          <option value="egg">卵（全卵）</option>
+          <option value="cottage_cheese">カッテージチーズ</option>
+        </optgroup>
+        <optgroup label="🥦 野菜・穀物">
+          <option value="sweet_potato">さつまいも</option>
+          <option value="broccoli">ブロッコリー</option>
+          <option value="carrot">人参</option>
+          <option value="pumpkin">かぼちゃ</option>
+          <option value="spinach">ほうれん草</option>
+          <option value="brown_rice">玄米（炊飯後）</option>
+          <option value="oatmeal">オートミール</option>
+        </optgroup>
+        <optgroup label="💊 サプリ系">
+          <option value="bone_meal">骨粉（フィッシュ）</option>
+          <option value="kelp">昆布粉</option>
+          <option value="fish_oil">魚油</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="add-grid">
+      <div class="field"><label>量 (g)</label>
+        <input type="number" id="food-amount" value="100" min="1" max="2000" step="5">
+      </div>
+      <div class="field"><label>&nbsp;</label>
+        <button class="btn primary" onclick="addFood()">＋ 追加</button>
+      </div>
+    </div>
+    <div id="food-list"><div class="empty">食材を追加してください</div></div>
+  </div>
+
+  <button class="btn calc" onclick="calculate()">🔍 栄養バランスを計算する</button>
+
+  <div id="results" style="display:none;">
+    <div class="card">
+      <div class="card-header"><span class="card-icon">📊</span><span class="sec-title">1日の合計</span></div>
+      <div class="metrics">
+        <div class="metric"><div class="lbl">カロリー摂取</div><div class="val" id="r-kcal">0</div><div class="unt">kcal</div></div>
+        <div class="metric green"><div class="lbl">消費カロリー</div><div class="val" id="r-ex-kcal">0</div><div class="unt">kcal</div></div>
+        <div class="metric"><div class="lbl">タンパク質</div><div class="val" id="r-protein">0</div><div class="unt">g</div></div>
+        <div class="metric"><div class="lbl">脂質</div><div class="val" id="r-fat">0</div><div class="unt">g</div></div>
+      </div>
+      <div id="balance-box"></div>
+      <div class="divider"></div>
+      <div class="card-header" style="margin-bottom:8px;"><span class="card-icon">📈</span><span class="sec-title">栄養バランス（推奨比較）</span></div>
+      <div id="nutrient-bars"></div>
+      <div class="divider"></div>
+      <div class="card-header" style="margin-bottom:8px;"><span class="card-icon">💡</span><span class="sec-title">アドバイス</span></div>
+      <div id="advice-text"></div>
+      <div style="margin-top:12px;">
+        <button class="btn save-rec" onclick="saveRecord()">✅ 今日の記録を保存する</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 運動ページ -->
+<div id="page-exercise" class="page">
+<div class="container">
+  <div class="card">
+    <div class="card-header"><span class="card-icon">🏃</span><span class="sec-title">運動を追加</span></div>
+    <div class="field"><label>運動の種類</label>
+      <select id="ex-select">
+        <option value="">-- 選択してください --</option>
+        <optgroup label="散歩・ウォーキング">
+          <option value="walk_slow">散歩（ゆっくり）</option>
+          <option value="walk_normal">散歩（普通）</option>
+          <option value="walk_fast">散歩（速歩き）</option>
+        </optgroup>
+        <optgroup label="走る">
+          <option value="jog">ジョギング</option>
+          <option value="run">ランニング</option>
+          <option value="sprint">全力疾走</option>
+        </optgroup>
+        <optgroup label="遊び">
+          <option value="play_light">軽い遊び（室内）</option>
+          <option value="play_active">活発な遊び（ボール等）</option>
+          <option value="fetch">フェッチ・追いかけっこ</option>
+          <option value="swim">水泳</option>
+        </optgroup>
+        <optgroup label="その他">
+          <option value="agility">アジリティ</option>
+          <option value="rest">休息・室内うろうろ</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="add-grid">
+      <div class="field"><label>時間 (分)</label>
+        <input type="number" id="ex-duration" value="30" min="1" max="300" step="5">
+      </div>
+      <div class="field"><label>&nbsp;</label>
+        <button class="btn primary" onclick="addExercise()">＋ 追加</button>
+      </div>
+    </div>
+    <div id="exercise-list"><div class="empty">運動を追加してください</div></div>
+  </div>
+  <div class="card" id="ex-summary" style="display:none;">
+    <div class="card-header"><span class="card-icon">🔥</span><span class="sec-title">運動まとめ</span></div>
+    <div class="metrics">
+      <div class="metric green"><div class="lbl">消費カロリー合計</div><div class="val" id="ex-total-kcal">0</div><div class="unt">kcal</div></div>
+      <div class="metric"><div class="lbl">運動時間合計</div><div class="val" id="ex-total-min">0</div><div class="unt">分</div></div>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-top:4px;">※体重を元に計算。実際は犬種・個体差があります。</p>
+  </div>
+</div>
+</div>
+
+<!-- 記録ページ -->
+<div id="page-records" class="page">
+<div class="container">
+  <div class="card">
+    <div class="card-header"><span class="card-icon">📋</span><span class="sec-title">過去の記録</span></div>
+    <div id="records-list"><div class="empty">まだ記録がありません</div></div>
+  </div>
+  <button class="btn danger" onclick="clearAllRecords()">🗑 全記録を削除する</button>
+</div>
+</div>
+
+<script>
+const FOODS={
+  venison:{name:"鹿肉（赤身）",kcal:119,prot:23.3,fat:2.5,carb:0,ca:5,p:220,fe:3.9,zn:3.2,vitA:3,omega3:0.1,tag:"ジビエ"},
+  boar:{name:"猪肉",kcal:119,prot:19.8,fat:4.7,carb:0.1,ca:5,p:180,fe:1.8,zn:2.5,vitA:3,omega3:0.08,tag:"ジビエ"},
+  rabbit:{name:"ウサギ肉",kcal:115,prot:21.0,fat:3.0,carb:0,ca:11,p:200,fe:2.5,zn:1.8,vitA:5,omega3:0.3,tag:"ジビエ"},
+  horse:{name:"馬肉",kcal:110,prot:20.1,fat:2.5,carb:0.3,ca:11,p:170,fe:4.3,zn:2.8,vitA:8,omega3:0.2,tag:""},
+  duck:{name:"鴨肉",kcal:128,prot:19.0,fat:5.0,carb:0.1,ca:10,p:190,fe:2.2,zn:1.9,vitA:60,omega3:0.4,tag:""},
+  chicken:{name:"鶏肉（むね）",kcal:116,prot:23.3,fat:1.9,carb:0,ca:4,p:220,fe:0.3,zn:0.8,vitA:5,omega3:0.05,tag:""},
+  chicken_thigh:{name:"鶏肉（もも）",kcal:190,prot:17.3,fat:12.6,carb:0,ca:6,p:170,fe:0.6,zn:1.6,vitA:40,omega3:0.08,tag:""},
+  beef:{name:"牛肉（赤身）",kcal:140,prot:21.1,fat:5.6,carb:0.3,ca:4,p:185,fe:2.7,zn:4.4,vitA:2,omega3:0.05,tag:""},
+  pork:{name:"豚肉（赤身）",kcal:128,prot:20.9,fat:4.6,carb:0.2,ca:3,p:200,fe:0.9,zn:2.3,vitA:2,omega3:0.06,tag:""},
+  turkey:{name:"七面鳥",kcal:106,prot:22.3,fat:1.2,carb:0,ca:6,p:210,fe:1.2,zn:1.5,vitA:5,omega3:0.1,tag:""},
+  salmon:{name:"サーモン",kcal:139,prot:20.1,fat:6.3,carb:0,ca:12,p:210,fe:0.5,zn:0.6,vitA:25,omega3:2.5,tag:""},
+  tuna:{name:"マグロ",kcal:125,prot:26.4,fat:1.4,carb:0.1,ca:5,p:270,fe:2.0,zn:0.9,vitA:83,omega3:1.2,tag:""},
+  sardine:{name:"イワシ",kcal:136,prot:19.2,fat:6.4,carb:0,ca:70,p:270,fe:2.1,zn:1.3,vitA:12,omega3:2.1,tag:""},
+  liver_chicken:{name:"鶏レバー",kcal:111,prot:18.9,fat:3.1,carb:0.6,ca:11,p:300,fe:9.0,zn:3.3,vitA:14000,omega3:0.1,tag:"内臓"},
+  liver_beef:{name:"牛レバー",kcal:132,prot:19.6,fat:3.7,carb:3.7,ca:5,p:330,fe:4.0,zn:3.8,vitA:13000,omega3:0.1,tag:"内臓"},
+  heart:{name:"ハツ（心臓）",kcal:110,prot:16.0,fat:5.3,carb:0.1,ca:5,p:180,fe:3.8,zn:2.5,vitA:40,omega3:0.1,tag:"内臓"},
+  kidney:{name:"腎臓",kcal:100,prot:17.0,fat:3.0,carb:0.8,ca:10,p:250,fe:5.0,zn:2.8,vitA:200,omega3:0.1,tag:"内臓"},
+  egg:{name:"卵（全卵）",kcal:151,prot:12.3,fat:10.3,carb:0.3,ca:51,p:170,fe:1.8,zn:1.1,vitA:210,omega3:0.2,tag:""},
+  cottage_cheese:{name:"カッテージチーズ",kcal:99,prot:13.3,fat:4.5,carb:1.9,ca:55,p:130,fe:0.1,zn:0.4,vitA:37,omega3:0.05,tag:""},
+  sweet_potato:{name:"さつまいも",kcal:130,prot:1.2,fat:0.2,carb:31.0,ca:40,p:46,fe:0.5,zn:0.3,vitA:40,omega3:0,tag:""},
+  broccoli:{name:"ブロッコリー",kcal:33,prot:4.3,fat:0.5,carb:5.2,ca:50,p:89,fe:1.0,zn:0.6,vitA:67,omega3:0.05,tag:""},
+  carrot:{name:"人参",kcal:39,prot:0.6,fat:0.1,carb:9.3,ca:28,p:28,fe:0.2,zn:0.2,vitA:720,omega3:0,tag:""},
+  pumpkin:{name:"かぼちゃ",kcal:91,prot:1.9,fat:0.3,carb:20.6,ca:15,p:43,fe:0.5,zn:0.3,vitA:330,omega3:0,tag:""},
+  spinach:{name:"ほうれん草",kcal:20,prot:2.2,fat:0.4,carb:3.1,ca:49,p:47,fe:2.0,zn:0.7,vitA:350,omega3:0.05,tag:""},
+  brown_rice:{name:"玄米（炊飯後）",kcal:165,prot:2.8,fat:1.0,carb:35.6,ca:7,p:95,fe:0.6,zn:0.8,vitA:0,omega3:0,tag:""},
+  oatmeal:{name:"オートミール",kcal:380,prot:13.7,fat:5.7,carb:69.1,ca:47,p:370,fe:3.9,zn:2.7,vitA:0,omega3:0.1,tag:""},
+  bone_meal:{name:"骨粉（フィッシュ）",kcal:200,prot:20.0,fat:2.0,carb:0,ca:280,p:140,fe:1.0,zn:2.0,vitA:0,omega3:1.0,tag:""},
+  kelp:{name:"昆布粉",kcal:145,prot:8.2,fat:1.2,carb:61.5,ca:710,p:150,fe:2.4,zn:0.8,vitA:0,omega3:0,tag:""},
+  fish_oil:{name:"魚油",kcal:900,prot:0,fat:100,carb:0,ca:0,p:0,fe:0,zn:0,vitA:0,omega3:30.0,tag:""},
+};
+const EXERCISES={
+  walk_slow:{name:"散歩（ゆっくり）",met:2.5,icon:"🚶"},
+  walk_normal:{name:"散歩（普通）",met:3.5,icon:"🚶"},
+  walk_fast:{name:"散歩（速歩き）",met:4.5,icon:"🚶"},
+  jog:{name:"ジョギング",met:7.0,icon:"🏃"},
+  run:{name:"ランニング",met:10.0,icon:"🏃"},
+  sprint:{name:"全力疾走",met:14.0,icon:"💨"},
+  play_light:{name:"軽い遊び（室内）",met:3.0,icon:"🎾"},
+  play_active:{name:"活発な遊び",met:5.0,icon:"⚽"},
+  fetch:{name:"フェッチ・追いかけっこ",met:6.0,icon:"🎯"},
+  swim:{name:"水泳",met:8.0,icon:"🏊"},
+  agility:{name:"アジリティ",met:9.0,icon:"🏅"},
+  rest:{name:"休息・室内うろうろ",met:1.5,icon:"😴"},
+};
+
+let foods=[],exercises=[],lastResult=null;
+
+function showPage(p,btn){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  btn.classList.add('active');
+  if(p==='records')renderRecords();
+}
+
+function addFood(){
+  const sel=document.getElementById('food-select');
+  const amt=parseFloat(document.getElementById('food-amount').value);
+  const key=sel.value;
+  if(!key||isNaN(amt)||amt<=0)return;
+  foods.push({key,name:FOODS[key].name,amount:amt,tag:FOODS[key].tag});
+  renderFoodList();sel.value='';
+}
+function removeFood(i){foods.splice(i,1);renderFoodList();document.getElementById('results').style.display='none';}
+function renderFoodList(){
+  const el=document.getElementById('food-list');
+  if(!foods.length){el.innerHTML='<div class="empty">食材を追加してください</div>';return;}
+  el.innerHTML=foods.map((f,i)=>{
+    const fd=FOODS[f.key],cal=Math.round(fd.kcal*f.amount/100);
+    const tg=f.tag?`<span class="tag">${f.tag}</span>`:'';
+    return`<div class="food-item"><div class="food-info"><div class="food-name">${f.name}${tg}</div><div class="food-sub">${f.amount}g &middot; ${cal} kcal</div></div><button class="rm-btn" onclick="removeFood(${i})">×</button></div>`;
+  }).join('');
+}
+
+function addExercise(){
+  const sel=document.getElementById('ex-select');
+  const dur=parseFloat(document.getElementById('ex-duration').value);
+  const key=sel.value;
+  if(!key||isNaN(dur)||dur<=0)return;
+  const w=parseFloat(document.getElementById('weight').value)||5;
+  const ex=EXERCISES[key];
+  const kcal=Math.round(ex.met*w*dur/60*10)/10;
+  exercises.push({key,name:ex.name,icon:ex.icon,duration:dur,kcal});
+  renderExerciseList();sel.value='';
+}
+function removeExercise(i){exercises.splice(i,1);renderExerciseList();}
+function renderExerciseList(){
+  const el=document.getElementById('exercise-list');
+  const sumEl=document.getElementById('ex-summary');
+  if(!exercises.length){el.innerHTML='<div class="empty">運動を追加してください</div>';sumEl.style.display='none';return;}
+  el.innerHTML=exercises.map((e,i)=>`<div class="exercise-item"><div class="ex-info"><div class="ex-name">${e.icon} ${e.name}</div><div class="ex-sub">${e.duration}分</div></div><span class="ex-cal">-${e.kcal} kcal</span><button class="rm-btn" onclick="removeExercise(${i})">×</button></div>`).join('');
+  const totalKcal=Math.round(exercises.reduce((s,e)=>s+e.kcal,0)*10)/10;
+  const totalMin=exercises.reduce((s,e)=>s+e.duration,0);
+  document.getElementById('ex-total-kcal').textContent=totalKcal;
+  document.getElementById('ex-total-min').textContent=totalMin;
+  sumEl.style.display='block';
+}
+
+function calcNeeds(){
+  const w=parseFloat(document.getElementById('weight').value)||5;
+  const act=parseFloat(document.getElementById('activity').value)||1.0;
+  const type=document.getElementById('pet-type').value;
+  const mer=70*Math.pow(w,0.75)*act;
+  return{kcal:Math.round(mer),protein:Math.round(mer*0.25/4*10)/10,fat:Math.round(mer*0.15/9*10)/10,carb:type==='cat'?10:Math.round(mer*0.3/4*10)/10,ca:Math.round(w*130),p:Math.round(w*100),fe:Math.round(w*1.3*10)/10,zn:Math.round(w*1.5*10)/10,vitA:Math.round(w*75),omega3:Math.round(w*0.2*10)/10};
+}
+
+function calculate(){
+  if(!foods.length){alert('食材を追加してください');return;}
+  const t={kcal:0,prot:0,fat:0,carb:0,ca:0,p:0,fe:0,zn:0,vitA:0,omega3:0};
+  foods.forEach(f=>{const fd=FOODS[f.key],r=f.amount/100;t.kcal+=fd.kcal*r;t.prot+=fd.prot*r;t.fat+=fd.fat*r;t.carb+=fd.carb*r;t.ca+=fd.ca*r;t.p+=fd.p*r;t.fe+=fd.fe*r;t.zn+=fd.zn*r;t.vitA+=fd.vitA*r;t.omega3+=fd.omega3*r;});
+  const n=calcNeeds();
+  const exKcal=Math.round(exercises.reduce((s,e)=>s+e.kcal,0));
+  const net=Math.round(t.kcal)-exKcal;
+  document.getElementById('r-kcal').textContent=Math.round(t.kcal);
+  document.getElementById('r-ex-kcal').textContent=exKcal;
+  document.getElementById('r-protein').textContent=(Math.round(t.prot*10)/10).toFixed(1);
+  document.getElementById('r-fat').textContent=(Math.round(t.fat*10)/10).toFixed(1);
+  const diff=net-n.kcal;
+  let bCls,bLabel,bVal;
+  if(Math.abs(diff)<n.kcal*0.1){bCls='ok';bLabel='カロリーバランス良好 ✨';bVal=`±${Math.abs(diff)} kcal`;}
+  else if(diff>0){bCls='over';bLabel='カロリー過多 ⚠️';bVal=`+${diff} kcal`;}
+  else{bCls='under';bLabel='カロリー不足 ⚡';bVal=`${diff} kcal`;}
+  document.getElementById('balance-box').innerHTML=`<div class="balance-box ${bCls}"><div class="balance-label ${bCls}">${bLabel}</div><div class="balance-val ${bCls}">${bVal}</div><div class="balance-note">摂取 ${Math.round(t.kcal)} - 消費 ${exKcal} = 正味 ${net} kcal（推奨 ${n.kcal} kcal）</div></div>`;
+  const nutrients=[{name:'カロリー',got:t.kcal,need:n.kcal,unit:'kcal'},{name:'タンパク質',got:t.prot,need:n.protein,unit:'g'},{name:'脂質',got:t.fat,need:n.fat,unit:'g'},{name:'炭水化物',got:t.carb,need:n.carb,unit:'g'},{name:'カルシウム',got:t.ca,need:n.ca,unit:'mg'},{name:'リン',got:t.p,need:n.p,unit:'mg'},{name:'鉄分',got:t.fe,need:n.fe,unit:'mg'},{name:'亜鉛',got:t.zn,need:n.zn,unit:'mg'},{name:'ビタミンA',got:t.vitA,need:n.vitA,unit:'μg'},{name:'オメガ3',got:t.omega3,need:n.omega3,unit:'g'}];
+  let bars='',lowList=[],highList=[];
+  nutrients.forEach(nu=>{
+    const ratio=nu.need>0?nu.got/nu.need:1,pct=Math.min(ratio*100,100);
+    let barCls='bar-ok',lbl='✅ 適正',lblCls='ok';
+    if(ratio<0.75){barCls='bar-low';lbl='⚠️ 不足';lblCls='low';lowList.push(nu.name);}
+    else if(ratio>1.5){barCls='bar-high';lbl='🔴 過剰';lblCls='high';highList.push(nu.name);}
+    bars+=`<div class="nrow"><div class="nhdr"><span class="nname">${nu.name}</span><span class="nval">${(Math.round(nu.got*10)/10).toFixed(1)} / ${(Math.round(nu.need*10)/10).toFixed(1)} ${nu.unit}</span></div><div class="bar-bg"><div class="bar-fill ${barCls}" style="width:${pct.toFixed(1)}%"></div></div><div class="slbl ${lblCls}">${lbl}（${Math.round(ratio*100)}%）</div></div>`;
+  });
+  document.getElementById('nutrient-bars').innerHTML=bars;
+  let adv='',advCls='good';
+  if(!lowList.length&&!highList.length){adv='全栄養素がバランス良く摂取できています！このメニューを継続しましょう 🎉';}
+  else{advCls='warn';if(lowList.length)adv+=`<b>不足気味：</b>${lowList.join('、')}。`;if(highList.length)adv+=`<b>過剰気味：</b>${highList.join('、')}。`;if(lowList.includes('カルシウム'))adv+=' 骨粉やイワシの追加がおすすめ。';if(lowList.includes('オメガ3'))adv+=' 魚油やサーモンでオメガ3を補えます。';if(lowList.includes('鉄分'))adv+=' レバー少量（週2〜3回）で鉄分補給を。';if(highList.includes('ビタミンA'))adv+=' レバーは週1〜2回程度に減らして。';}
+  document.getElementById('advice-text').innerHTML=`<div class="advice ${advCls}">${adv}</div>`;
+  lastResult={foods:[...foods],exercises:[...exercises],kcal:Math.round(t.kcal),exKcal,net,protein:Math.round(t.prot*10)/10,lowList,highList};
+  document.getElementById('results').style.display='block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function saveRecord(){
+  if(!lastResult)return;
+  const records=JSON.parse(localStorage.getItem('pet_records')||'[]');
+  const now=new Date();
+  const dateStr=`${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  records.unshift({date:dateStr,...lastResult});
+  if(records.length>30)records.pop();
+  localStorage.setItem('pet_records',JSON.stringify(records));
+  alert('記録を保存しました！📝');
+}
+
+function renderRecords(){
+  const records=JSON.parse(localStorage.getItem('pet_records')||'[]');
+  const el=document.getElementById('records-list');
+  if(!records.length){el.innerHTML='<div class="empty">まだ記録がありません</div>';return;}
+  el.innerHTML=records.map((r,i)=>{
+    const foodStr=r.foods.map(f=>`${f.name} ${f.amount}g`).join('、');
+    const exStr=r.exercises&&r.exercises.length?r.exercises.map(e=>`${e.name} ${e.duration}分`).join('、'):'なし';
+    const badge=r.lowList&&r.lowList.length?`<span style="color:var(--amber-text);font-weight:700;">⚠️ 不足あり</span>`:`<span style="color:var(--green-text);font-weight:700;">✅ バランス良好</span>`;
+    return`<div class="rec-item"><div class="rec-date">${r.date}</div><div class="rec-foods">🥩 ${foodStr}</div>${r.exercises&&r.exercises.length?`<div class="rec-foods">🏃 ${exStr}</div>`:''}<div class="rec-stats"><span class="rec-stat">${r.kcal} <span>kcal摂取</span></span><span class="rec-stat">${r.exKcal||0} <span>kcal消費</span></span><span class="rec-stat">${r.protein} <span>g たんぱく質</span></span>${badge}</div><div class="rec-actions"><button class="rec-btn del" onclick="deleteRecord(${i})">削除</button></div></div>`;
+  }).join('');
+}
+
+function deleteRecord(i){
+  const records=JSON.parse(localStorage.getItem('pet_records')||'[]');
+  records.splice(i,1);
+  localStorage.setItem('pet_records',JSON.stringify(records));
+  renderRecords();
+}
+function clearAllRecords(){
+  if(!confirm('全ての記録を削除しますか？'))return;
+  localStorage.removeItem('pet_records');
+  renderRecords();
+}
+</script>
+</body>
+</html>
